@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SegurPYME – Demo del aplicativo</title>
+<style>
+:root{
+  --bg:#F4F7F6; --card:#FFFFFF; --ink:#0B1B2B; --muted:#5B6B7A; --line:#E1E8E6;
+  --em:#12B886; --emd:#0B7A5A; --emt:#D9F3EA; --red:#E5484D; --redt:#FBE3E4; --amb:#F5A623; --ambt:#FDF0D5;
+  --dark:#0B1B2B; --dark2:#14324F;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#08131F; --card:#10263B; --ink:#EAF1F7; --muted:#9FB3C8; --line:#1D3A55;
+    --emt:#0F3B32; --redt:#3A1A24; --ambt:#3B2F12; --emd:#3DDCA5;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#08131F; --card:#10263B; --ink:#EAF1F7; --muted:#9FB3C8; --line:#1D3A55;
+  --emt:#0F3B32; --redt:#3A1A24; --ambt:#3B2F12; --emd:#3DDCA5;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:Calibri,"Segoe UI",Arial,sans-serif;font-size:16px;line-height:1.45}
+.wrap{max-width:760px;margin:0 auto;padding:16px 16px 96px}
+header.top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.logo{width:38px;height:38px;border-radius:50%;background:var(--em);display:grid;place-items:center;flex:none}
+.logo svg{width:20px;height:20px;fill:#fff}
+.brand{font-family:Cambria,Georgia,serif;font-weight:700;font-size:22px}
+.tag{margin-left:auto;font-size:11px;color:var(--muted);text-align:right}
+nav.steps{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px}
+nav.steps button{flex:none;border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
+nav.steps button.on{background:var(--em);border-color:var(--em);color:#04231A;font-weight:700}
+nav.steps button.done{color:var(--emd);border-color:var(--em)}
+nav.steps button:disabled{opacity:.45;cursor:not-allowed}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+h1,h2{font-family:Cambria,Georgia,serif;margin:0 0 6px}
+h1{font-size:26px} h2{font-size:21px}
+p{margin:0 0 10px} .muted{color:var(--muted)} .small{font-size:13px}
+label{display:block;font-weight:700;font-size:14px;margin:12px 0 4px}
+input,select{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.btn{display:inline-block;border:0;border-radius:10px;padding:12px 18px;font:inherit;font-weight:700;cursor:pointer;background:var(--em);color:#04231A}
+.btn.alt{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;transition:width .4s}
+.q{padding:12px 0;border-top:1px solid var(--line)} .q:first-of-type{border-top:0}
+.q .cat{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--emd);text-transform:uppercase}
+.opts{display:flex;gap:8px;margin-top:8px}
+.opts button{flex:1;padding:10px 6px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
+.opts button.sel2{background:var(--emt);border-color:var(--em);font-weight:700}
+.opts button.sel1{background:var(--ambt);border-color:var(--amb);font-weight:700}
+.opts button.sel0{background:var(--redt);border-color:var(--red);font-weight:700}
+.light{display:flex;gap:18px;align-items:center}
+.lamp{width:118px;flex:none;background:var(--dark);border-radius:22px;padding:12px 0;display:flex;flex-direction:column;gap:10px;align-items:center}
+.lamp i{width:70px;height:70px;border-radius:50%;opacity:.18;display:block}
+.lamp i.on{opacity:1;box-shadow:0 0 22px currentColor}
+.score{font-family:Cambria,Georgia,serif;font-size:56px;font-weight:700;line-height:1}
+.chip{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700}
+.chip.g{background:var(--emt);color:var(--emd)} .chip.a{background:var(--ambt);color:#8A5A00} .chip.r{background:var(--redt);color:var(--red)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip.a{color:var(--amb)}}
+:root[data-theme="dark"] .chip.a{color:var(--amb)}
+.item{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
+.item:first-of-type{border-top:0}
+.item input[type=checkbox]{width:22px;height:22px;margin-top:2px;flex:none;accent-color:var(--em)}
+.item.done .tx{text-decoration:line-through;color:var(--muted)}
+.week{font-size:12px;font-weight:700;color:var(--emd);letter-spacing:.06em;text-transform:uppercase;margin:14px 0 2px}
+.legal{padding:12px 0;border-top:1px solid var(--line)} .legal:first-of-type{border-top:0}
+.legal .hd{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.note{background:var(--ambt);border-radius:10px;padding:10px 12px;font-size:13px}
+.mail{border:1px dashed var(--line);border-radius:10px;padding:12px;background:var(--bg);font-size:14px;margin:8px 0}
+.seal{display:flex;gap:14px;align-items:center}
+.seal .badge{width:74px;height:74px;border-radius:50%;display:grid;place-items:center;background:var(--line);flex:none}
+.seal .badge svg{width:36px;height:36px;fill:#fff}
+.seal.ok .badge{background:var(--em)}
+.foot{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:10px 16px}
+.foot div{max-width:760px;margin:0 auto;display:flex;gap:10px;justify-content:space-between}
+svg text{fill:var(--muted);font-size:11px;font-family:Calibri,Arial,sans-serif}
+.linklike{background:none;border:0;color:var(--emd);font:inherit;font-size:13px;font-weight:700;padding:6px 0 0;cursor:pointer;text-align:left}
+.linklike:disabled{opacity:.5;cursor:default}
+.expl{background:var(--emt);border-radius:10px;padding:10px 12px;font-size:13px;margin-top:8px;color:var(--ink)}
+.expl.err{background:var(--redt);color:var(--red)}
+.pdfbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pdfnote{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo"><svg viewBox="0 0 512 512"><path d="M466.5 83.7l-192-80a48.15 48.15 0 0 0-36.9 0l-192 80C27.7 91.1 16 108.6 16 128c0 198.5 114.5 335.7 221.5 380.3 11.8 4.9 25.1 4.9 36.9 0C360.1 472.6 496 349.3 496 128c0-19.4-11.7-36.9-29.5-44.3zM256.1 446.3l-.1-381 175.9 73.3c-3.3 151.4-82.1 261.1-175.8 307.7z"/></svg></div>
+    <div class="brand">SegurPYME</div>
+    <div class="tag">Prototipo de demostración<br>Cyber Guardians</div>
+  </header>
+  <nav class="steps" id="steps"></nav>
+  <main id="view"></main>
+</div>
+<div class="foot"><div>
+  <button class="btn alt" id="prev">Atrás</button>
+  <button class="btn" id="next">Siguiente</button>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const STEPS=['Inicio','1 Test','2 Semáforo','3 Ruta legal','4 Plan 30 días','5 Equipo'];
+const Q=[
+ {id:'pass',a:'t',cat:'Contraseñas',q:'¿Usan contraseñas distintas y largas en cada cuenta importante?',fix:'Cambiar contraseñas por frases largas y usar un gestor de contraseñas gratuito.',w:1},
+ {id:'mfa',a:'t',cat:'Accesos',q:'¿Activaron la verificación en dos pasos (correo, banco, redes)?',fix:'Activar verificación en dos pasos en correo, banco y redes sociales.',w:1},
+ {id:'bak',a:'t',cat:'Respaldos',q:'¿Hacen copias de respaldo y comprueban que se pueden restaurar?',fix:'Programar una copia semanal en la nube o disco externo y probar restaurarla.',w:2},
+ {id:'upd',a:'t',cat:'Equipos',q:'¿Los equipos tienen antivirus y actualizaciones al día?',fix:'Activar actualizaciones automáticas y revisar el antivirus de cada equipo.',w:2},
+ {id:'wifi',a:'t',cat:'Red',q:'¿El Wi-Fi del negocio está separado del de clientes y con clave segura?',fix:'Crear una red Wi-Fi de invitados con clave distinta a la del negocio.',w:2},
+ {id:'phi',a:'t',cat:'Personas',q:'¿Tu equipo sabe reconocer correos y mensajes falsos (phishing)?',fix:'Hacer una charla de 20 minutos sobre correos y mensajes falsos.',w:3},
+ {id:'acc',a:'l',cat:'Acceso a datos',q:'¿Solo el personal necesario ve los datos de tus clientes?',fix:'Limitar accesos: cada persona solo ve los datos que necesita.',w:1,legal:'Aplicar medidas de seguridad proporcionales al tratamiento de datos personales.'},
+ {id:'con',a:'l',cat:'Consentimiento',q:'¿Piden consentimiento antes de guardar datos de clientes?',fix:'Agregar aviso y consentimiento donde recoges datos (formulario, WhatsApp, libro de reclamos).',w:2,legal:'Obtener consentimiento previo, informado y expreso antes de recoger datos.'},
+ {id:'pol',a:'l',cat:'Privacidad',q:'¿Tienen una política de privacidad visible para los clientes?',fix:'Publicar la política de privacidad en la web, redes o en el local.',w:3,legal:'Informar la finalidad del tratamiento y el plazo de conservación.'},
+ {id:'arco',a:'l',cat:'Derechos ARCO',q:'¿Hay un canal para que un cliente pida acceso, rectificación o eliminación de sus datos?',fix:'Habilitar un correo o formulario para derechos ARCO y responder dentro del plazo.',w:3,legal:'Atender los derechos ARCO de los titulares de los datos.'},
+ {id:'reg',a:'l',cat:'Registro',q:'¿Registraron su banco de datos personales ante la Autoridad Nacional de Protección de Datos?',fix:'Inscribir el banco de datos personales ante la Autoridad Nacional de Protección de Datos.',w:4,legal:'Inscribir los bancos de datos personales ante la autoridad.'},
+ {id:'brc',a:'l',cat:'Filtraciones',q:'¿Tienen un plan para avisar una filtración de datos dentro de 48 horas?',fix:'Redactar un plan de respuesta: quién avisa, a quién y dentro de 48 horas.',w:4,legal:'Notificar las filtraciones de datos dentro de 48 horas, según el nuevo reglamento.'}
+];
+const LESSONS=[
+ {m:'“Tu cuenta bancaria fue suspendida. Ingresa hoy a bit.ly/verifica-cuenta o la perderás.”',fraud:true,why:'Los bancos no piden verificar cuentas por enlaces acortados ni con urgencia. Es phishing.'},
+ {m:'WhatsApp de “tu jefe”, desde un número nuevo: “Urgente, compra 5 tarjetas de regalo y envíame los códigos”.',fraud:true,why:'Es un fraude de suplantación. Confirma siempre por otro canal antes de pagar.'},
+ {m:'Tu computadora avisa desde Configuración: “Hay actualizaciones disponibles. Reiniciar más tarde”.',fraud:false,why:'Es un aviso propio del sistema. Actualizar a tiempo es una buena práctica.'}
+];
+const S={step:0,name:'',rubro:'Bodega o tienda',emp:'1 a 5',ans:{},done:{},les:{},expl:{},explLoad:{},pdfLoad:false,pdfErr:''};
+const CAP={sample:null,downloads:null};
+async function initCaps(){
+  if(!window.claude||!window.claude.use) return;
+  try{CAP.sample=await window.claude.use('sample')}catch(e){}
+  try{CAP.downloads=await window.claude.use('downloads')}catch(e){}
+  render();
+}
+
+function eff(id){return S.done[id]?2:(S.ans[id]??0)}
+function pct(list){let t=0;list.forEach(q=>t+=eff(q.id));return Math.round(t/(2*list.length)*100)}
+const all=()=>Q, tec=()=>Q.filter(q=>q.a==='t'), leg=()=>Q.filter(q=>q.a==='l');
+function level(p){return p>=75?{k:'g',c:'var(--em)',t:'Verde: bien protegida'}:p>=45?{k:'a',c:'var(--amb)',t:'Amarillo: riesgo medio'}:{k:'r',c:'var(--red)',t:'Rojo: riesgo alto'}}
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const answered=()=>Q.every(q=>S.ans[q.id]!==undefined);
+
+function demo(){
+  S.name='Minimarket Los Andes';S.rubro='Bodega o tienda';S.emp='1 a 5';
+  const v={pass:0,mfa:0,bak:1,upd:1,wifi:0,phi:1,acc:1,con:0,pol:0,arco:0,reg:0,brc:0};
+  S.ans={...v};S.done={};S.les={};
+}
+
+function bar(p){const l=level(p);return `<div class="bar"><i style="width:${p}%;background:${l.c}"></i></div>`}
+function lamp(p){const l=level(p).k;return `<div class="lamp"><i style="background:var(--red);color:var(--red)" class="${l==='r'?'on':''}"></i><i style="background:var(--amb);color:var(--amb)" class="${l==='a'?'on':''}"></i><i style="background:var(--em);color:var(--em)" class="${l==='g'?'on':''}"></i></div>`}
+
+function vInicio(){return `
+<div class="card">
+  <h1>Protege tu negocio y cumple la ley en minutos</h1>
+  <p class="muted">Responde un test corto y recibe tu semáforo de riesgo, tu ruta de cumplimiento de la Ley 29733 y un plan de 30 días.</p>
+  <label for="nm">Nombre de tu negocio</label>
+  <input id="nm" placeholder="Ej. Minimarket Los Andes" value="${esc(S.name)}">
+  <label for="rb">Rubro</label>
+  <select id="rb">${['Bodega o tienda','Restaurante o cafetería','Clínica o consultorio','Colegio o academia','Tienda en línea','Otro'].map(o=>`<option ${o===S.rubro?'selected':''}>${o}</option>`).join('')}</select>
+  <label for="em">Personas que trabajan contigo</label>
+  <select id="em">${['1 a 5','6 a 20','21 a 50'].map(o=>`<option ${o===S.emp?'selected':''}>${o}</option>`).join('')}</select>
+  <div class="row"><button class="btn" data-a="start">Empezar diagnóstico</button><button class="btn alt" data-a="demo">Llenar con ejemplo</button></div>
+</div>
+<p class="small muted">Demostración con datos ilustrativos. No reemplaza una asesoría legal.</p>`}
+
+function vTest(){
+  const n=Object.keys(S.ans).length;
+  return `<div class="card"><h2>Test de 10 minutos</h2><p class="muted small">${n} de ${Q.length} respondidas</p>${bar(Math.round(n/Q.length*100)).replace(/var\(--red\)|var\(--amb\)/,'var(--em)')}</div>
+  <div class="card">${Q.map(q=>`<div class="q"><div class="cat">${q.a==='t'?'Seguridad':'Cumplimiento'} · ${q.cat}</div><div>${q.q}</div>
+    <div class="opts">${[[2,'Sí'],[1,'En parte'],[0,'No']].map(o=>`<button class="${S.ans[q.id]===o[0]?'sel'+o[0]:''}" data-a="ans" data-id="${q.id}" data-v="${o[0]}">${o[1]}</button>`).join('')}</div></div>`).join('')}</div>`}
+
+function vSemaforo(){
+  const p=pct(all()),l=level(p),pt=pct(tec()),pl=pct(leg());
+  const risks=Q.filter(q=>eff(q.id)<2).sort((a,b)=>eff(a.id)-eff(b.id)||a.w-b.w).slice(0,3);
+  return `<div class="card"><p class="muted small">${esc(S.name||'Tu negocio')} · ${esc(S.rubro)}</p>
+   <div class="light">${lamp(p)}<div><div class="score">${p}<span style="font-size:24px">/100</span></div><span class="chip ${l.k}">${l.t}</span>
+   <p class="muted small" style="margin-top:8px">Diagnóstico exprés de seguridad y cumplimiento.</p></div></div></div>
+   <div class="card"><h2>Por área</h2>
+     <p style="margin:8px 0 4px"><b>Seguridad técnica</b> · ${pt}%</p>${bar(pt)}
+     <p style="margin:14px 0 4px"><b>Cumplimiento legal</b> · ${pl}%</p>${bar(pl)}</div>
+   <div class="card"><h2>Tus 3 riesgos principales</h2>
+     ${risks.length?risks.map(q=>`<div class="item"><span class="chip ${eff(q.id)===0?'r':'a'}">${eff(q.id)===0?'Falta':'Parcial'}</span><div style="flex:1"><b>${q.cat}</b><br><span class="muted small">${q.q}</span>${explainBlock(q)}</div></div>`).join(''):'<p>No encontramos riesgos importantes. ¡Buen trabajo!</p>'}</div>
+   ${pdfCard()}`}
+
+function explainBlock(q){
+  if(S.explLoad[q.id]) return `<div class="expl">Pensando…</div>`;
+  if(S.expl[q.id]!==undefined) return S.expl[q.id]===''?'':`<div class="expl${S.expl[q.id]==='__err'?' err':''}">${S.expl[q.id]==='__err'?'No se pudo generar la explicación. Intenta de nuevo.':esc(S.expl[q.id])}</div>`;
+  if(!CAP.sample) return '';
+  return `<button class="linklike" data-a="explain" data-id="${q.id}">¿Por qué me conviene esto? →</button>`;
+}
+function pdfCard(){
+  if(!CAP.downloads) return '';
+  return `<div class="card"><div class="pdfbar">
+    <button class="btn alt" data-a="pdf" ${S.pdfLoad?'disabled':''}>${S.pdfLoad?'Generando…':'⬇ Descargar reporte en PDF'}</button>
+    <span class="pdfnote">Semáforo, riesgos y ruta legal en un solo archivo</span></div>
+    ${S.pdfErr?`<div class="expl err" style="margin-top:10px">${esc(S.pdfErr)}</div>`:''}</div>`}
+
+function vLegal(){
+  const p=pct(leg());
+  return `<div class="card"><h2>Ruta de cumplimiento: Ley 29733</h2>
+   <p class="muted small">Ley de Protección de Datos Personales y su reglamento vigente (D.S. 016-2024-JUS).</p>
+   <p style="margin:8px 0 4px"><b>Avance legal</b> · ${p}%</p>${bar(p)}</div>
+   <div class="card">${leg().map(q=>{const e=eff(q.id);const c=e===2?['g','Cumple']:e===1?['a','Parcial']:['r','Pendiente'];
+     return `<div class="legal"><div class="hd"><b>${q.cat}</b><span class="chip ${c[0]}">${c[1]}</span></div>
+     <div class="muted small">${q.legal}</div>${e<2?`<div style="margin-top:6px;font-size:14px"><b>Qué hacer:</b> ${q.fix}</div>`:''}${explainBlock(q)}</div>`}).join('')}</div>
+   ${pdfCard()}`}
+
+function vPlan(){
+  const p=pct(all()),l=level(p);
+  const tasks=Q.filter(q=>(S.ans[q.id]??0)<2).sort((a,b)=>a.w-b.w);
+  const done=tasks.filter(q=>S.done[q.id]).length;
+  let html=`<div class="card"><div class="light" style="gap:14px"><div style="transform:scale(.6);transform-origin:left center;width:70px;height:130px">${lamp(p)}</div>
+   <div><div class="score" style="font-size:40px">${p}/100</div><span class="chip ${l.k}">${l.t}</span></div></div>
+   <p class="small muted" style="margin-top:0">Marca las acciones que ya hiciste y mira cómo sube tu semáforo. Completadas: ${done} de ${tasks.length}.</p></div>`;
+  if(!tasks.length) return html+'<div class="card"><p>No tienes acciones pendientes. Pasa al seguimiento.</p></div>';
+  let cur=0;html+='<div class="card">';
+  tasks.forEach(q=>{ if(q.w!==cur){cur=q.w;html+=`<div class="week">Semana ${cur}</div>`}
+    html+=`<label class="item ${S.done[q.id]?'done':''}" style="font-weight:400;margin:0"><input type="checkbox" data-a="task" data-id="${q.id}" ${S.done[q.id]?'checked':''}><span class="tx"><b>${q.cat}.</b> ${q.fix}</span></label>`});
+  return html+'</div>'}
+
+function vEquipo(){
+  const p=pct(all());
+  const pts=[p,Math.round(p+(100-p)*.5),Math.round(p+(100-p)*.8),Math.round(p+(100-p)*.95)];
+  const labs=['Hoy','Mes 1','Mes 2','Mes 3'];
+  const X=i=>40+i*80,Y=v=>120-v*1.0;
+  const poly=pts.map((v,i)=>`${X(i)},${Y(v)}`).join(' ');
+  const ok=p>=85, falta=Math.max(0,85-p);
+  const ls=LESSONS.map((L,i)=>{const r=S.les[i];return `<div class="card"><b>Mini-lección ${i+1}: ¿fraude o seguro?</b><div class="mail">${L.m}</div>
+   ${r===undefined?`<div class="opts"><button data-a="les" data-i="${i}" data-v="1">Es un fraude</button><button data-a="les" data-i="${i}" data-v="0">Es seguro</button></div>`
+   :`<p><span class="chip ${(r==='1')===L.fraud?'g':'r'}">${(r==='1')===L.fraud?'Correcto':'Incorrecto'}</span></p><p class="small muted">${L.why}</p>`}</div>`}).join('');
+  return `<div class="card"><h2>Capacitación del equipo</h2><p class="muted small">Microlecciones de 1 minuto para que todo el personal reconozca los engaños más comunes.</p></div>${ls}
+   <div class="card"><h2>Seguimiento mensual</h2><p class="muted small">Reporte de ejemplo: proyección si completas tu plan.</p>
+   <svg viewBox="0 0 340 150" width="100%" role="img" aria-label="Proyección del puntaje por mes">
+    ${[0,50,100].map(v=>`<line x1="30" x2="330" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="4" y="${Y(v)+4}">${v}</text>`).join('')}
+    <polyline points="${poly}" fill="none" stroke="var(--em)" stroke-width="3"/>
+    ${pts.map((v,i)=>`<circle cx="${X(i)}" cy="${Y(v)}" r="5" fill="var(--em)"/><text x="${X(i)-8}" y="${Y(v)-10}" style="fill:var(--ink);font-weight:700">${v}</text><text x="${X(i)-14}" y="145">${labs[i]}</text>`).join('')}
+   </svg></div>
+   <div class="card"><div class="seal ${ok?'ok':''}"><div class="badge"><svg viewBox="0 0 512 512"><path d="M466.5 83.7l-192-80a48.15 48.15 0 0 0-36.9 0l-192 80C27.7 91.1 16 108.6 16 128c0 198.5 114.5 335.7 221.5 380.3 11.8 4.9 25.1 4.9 36.9 0C360.1 472.6 496 349.3 496 128c0-19.4-11.7-36.9-29.5-44.3zM256.1 446.3l-.1-381 175.9 73.3c-3.3 151.4-82.1 261.1-175.8 307.7z"/></svg></div>
+   <div><b style="font-size:18px">Sello “PYME protegida”</b><br><span class="muted small">${ok?'¡Lo lograste! Puedes mostrarlo a tus clientes.':`Te faltan ${falta} puntos para obtenerlo (meta: 85/100).`}</span></div></div></div>`}
+
+const VIEWS=[vInicio,vTest,vSemaforo,vLegal,vPlan,vEquipo];
+function unlocked(i){return i<=1||answered()}
+function render(){
+  document.getElementById('steps').innerHTML=STEPS.map((s,i)=>`<button class="${i===S.step?'on':(i<S.step?'done':'')}" data-a="go" data-i="${i}" ${unlocked(i)?'':'disabled'}>${s}</button>`).join('');
+  document.getElementById('view').innerHTML=VIEWS[S.step]();
+  const pv=document.getElementById('prev'),nx=document.getElementById('next');
+  pv.style.visibility=S.step===0?'hidden':'visible';
+  nx.style.visibility=S.step===0?'hidden':'visible';
+  nx.textContent=S.step===VIEWS.length-1?'Volver al inicio':(S.step===1?'Ver mi semáforo':'Siguiente');
+  nx.disabled=(S.step===1&&!answered());
+  window.scrollTo({top:0});
+}
+function go(i){S.step=i;render()}
+
+async function doExplain(id){
+  const q=Q.find(x=>x.id===id); if(!q||!CAP.sample) return;
+  S.explLoad[id]=true;const y=window.scrollY;render();window.scrollTo({top:y});
+  const prompt=`Eres un asesor cercano de ciberseguridad que habla con dueños de pequeños negocios en Perú (bodegas, restaurantes, clínicas, colegios) sin conocimientos técnicos.\nNegocio: ${S.name||'un negocio'} (${S.rubro}).\nTema del diagnóstico: ${q.cat}\nPregunta: ${q.q}\nAcción recomendada: ${q.fix}\n\nExplica en máximo 3 oraciones cortas, en español simple y cercano (sin tecnicismos ni bullets), por qué le conviene resolver esto a su negocio.`;
+  try{
+    const {text}=await CAP.sample(prompt,{modelTier:'quick'});
+    S.expl[id]=text||'__err';
+  }catch(err){
+    if(err&&err.code==='not_granted'){CAP.sample=null;S.expl[id]='';}
+    else S.expl[id]='__err';
+  }
+  S.explLoad[id]=false;const y2=window.scrollY;render();window.scrollTo({top:y2});
+}
+
+async function doPdf(){
+  if(!CAP.downloads||!window.jspdf) return;
+  S.pdfLoad=true;S.pdfErr='';render();
+  try{
+    const {jsPDF}=window.jspdf; const doc=new jsPDF(); const M=15;let y=20;
+    const em='#0B7A5A',red='#E5484D',amb='#B8860B',ink='#0B1B2B',muted='#5B6B7A';
+    const p=pct(all()),l=level(p);
+    doc.setFont('helvetica','bold');doc.setFontSize(18);doc.setTextColor(ink);
+    doc.text('SegurPYME — Reporte de diagnóstico exprés',M,y);y+=8;
+    doc.setFont('helvetica','normal');doc.setFontSize(11);doc.setTextColor(muted);
+    doc.text(`${S.name||'Tu negocio'} · ${S.rubro} · ${S.emp} colaboradores`,M,y);y+=10;
+    doc.setDrawColor(220);doc.line(M,y,195,y);y+=10;
+    doc.setFont('helvetica','bold');doc.setFontSize(28);doc.setTextColor(l.k==='g'?em:l.k==='a'?amb:red);
+    doc.text(`${p}/100`,M,y);
+    doc.setFontSize(12);doc.setTextColor(ink);doc.text(l.t,M+38,y);y+=6;
+    doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(muted);
+    doc.text(`Seguridad técnica: ${pct(tec())}%   ·   Cumplimiento legal: ${pct(leg())}%`,M,y);y+=10;
+    doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(ink);doc.text('Riesgos principales',M,y);y+=7;
+    doc.setFont('helvetica','normal');doc.setFontSize(10);
+    Q.filter(q=>eff(q.id)<2).sort((a,b)=>eff(a.id)-eff(b.id)||a.w-b.w).slice(0,3).forEach(q=>{
+      doc.setTextColor(eff(q.id)===0?red:amb);doc.text(eff(q.id)===0?'● Falta':'● Parcial',M,y);
+      doc.setTextColor(ink);const lines=doc.splitTextToSize(`${q.cat}: ${q.q}`,150);doc.text(lines,M+22,y);y+=5*lines.length+2;
+    });
+    y+=4;doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(ink);doc.text('Ruta de cumplimiento — Ley 29733',M,y);y+=7;
+    doc.setFont('helvetica','normal');doc.setFontSize(10);
+    leg().forEach(q=>{
+      if(y>270){doc.addPage();y=20}
+      const e=eff(q.id),st=e===2?['Cumple',em]:e===1?['Parcial',amb]:['Pendiente',red];
+      doc.setTextColor(ink);doc.text(q.cat+':',M,y);doc.setTextColor(st[1]);doc.text(st[0],M+40,y);y+=5;
+      doc.setTextColor(muted);const lines=doc.splitTextToSize(q.legal,175);doc.text(lines,M,y);y+=5*lines.length+3;
+    });
+    doc.setFontSize(8);doc.setTextColor(muted);doc.text('Prototipo de demostración — Cyber Guardians. No reemplaza asesoría legal.',M,290);
+    const blob=doc.output('blob');
+    const safe=(S.name||'reporte').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')||'reporte';
+    await CAP.downloads.save({filename:`segurpyme-${safe}.pdf`,data:blob});
+  }catch(err){
+    S.pdfErr=(err&&err.code==='declined')?'':'No se pudo generar el PDF. Intenta de nuevo.';
+  }
+  S.pdfLoad=false;render();
+}
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-a]'); if(t){
+    const a=t.dataset.a;
+    if(a==='go')go(+t.dataset.i);
+    if(a==='start'){S.name=document.getElementById('nm').value.trim();S.rubro=document.getElementById('rb').value;S.emp=document.getElementById('em').value;go(1)}
+    if(a==='demo'){demo();go(2)}
+    if(a==='ans'){S.ans[t.dataset.id]=+t.dataset.v;const y=window.scrollY;render();window.scrollTo({top:y})}
+    if(a==='les'){S.les[t.dataset.i]=t.dataset.v;const y=window.scrollY;render();window.scrollTo({top:y})}
+    if(a==='explain')doExplain(t.dataset.id);
+    if(a==='pdf')doPdf();
+    return}
+  if(e.target.id==='prev')go(S.step-1);
+  if(e.target.id==='next')go(S.step===VIEWS.length-1?0:S.step+1);
+});
+document.addEventListener('change',e=>{
+  const t=e.target; if(t.dataset&&t.dataset.a==='task'){S.done[t.dataset.id]=t.checked;const y=window.scrollY;render();window.scrollTo({top:y})}
+});
+render();
+initCaps();
+</script>
+</body>
+</html>
