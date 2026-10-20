@@ -84,6 +84,18 @@ svg text{fill:var(--muted);font-size:11px;font-family:Calibri,Arial,sans-serif}
 .expl.err{background:var(--redt);color:var(--red)}
 .pdfbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .pdfnote{font-size:12px;color:var(--muted)}
+.authwrap{max-width:420px;margin:32px auto 0}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tabs button{flex:1;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--muted);font:inherit;font-weight:700;cursor:pointer}
+.tabs button.on{background:var(--em);border-color:var(--em);color:#04231A}
+.radiorow{display:flex;gap:10px;margin-top:8px}
+.radiorow label{display:flex;align-items:center;gap:6px;font-weight:400;font-size:14px;margin:0;flex:1;border:1px solid var(--line);border-radius:10px;padding:10px;cursor:pointer}
+.radiorow input{width:auto}
+.err{background:var(--redt);color:var(--red);border-radius:10px;padding:10px 12px;font-size:13px;margin-top:12px}
+.acctbar{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);margin:-6px 0 10px;gap:10px}
+.acctbar span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acctbar button{background:none;border:0;color:var(--emd);font:inherit;font-weight:700;cursor:pointer;padding:0;flex:none}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
 </style>
 </head>
 <body>
@@ -93,6 +105,7 @@ svg text{fill:var(--muted);font-size:11px;font-family:Calibri,Arial,sans-serif}
     <div class="brand">SegurPYME</div>
     <div class="tag">Prototipo de demostración<br>Cyber Guardians</div>
   </header>
+  <div id="acctbar"></div>
   <nav class="steps" id="steps"></nav>
   <main id="view"></main>
 </div>
@@ -123,8 +136,53 @@ const LESSONS=[
  {m:'WhatsApp de “tu jefe”, desde un número nuevo: “Urgente, compra 5 tarjetas de regalo y envíame los códigos”.',fraud:true,why:'Es un fraude de suplantación. Confirma siempre por otro canal antes de pagar.'},
  {m:'Tu computadora avisa desde Configuración: “Hay actualizaciones disponibles. Reiniciar más tarde”.',fraud:false,why:'Es un aviso propio del sistema. Actualizar a tiempo es una buena práctica.'}
 ];
-const S={step:0,name:'',rubro:'Bodega o tienda',emp:'1 a 5',ans:{},done:{},les:{},expl:{},explLoad:{},pdfLoad:false,pdfErr:''};
+const S={step:0,name:'',rubro:'Bodega o tienda',emp:'1 a 5',ans:{},done:{},les:{},expl:{},explLoad:{},pdfLoad:false,pdfErr:'',
+  auth:{loggedIn:false,ruc:'',negocio:''},authErr:''};
 const CAP={sample:null,downloads:null};
+
+// ---- Cuentas (solo en este navegador; no hay servidor real detrás de este prototipo) ----
+const ACC_KEY='segurpyme_accounts', SESS_KEY='segurpyme_session';
+function loadAccounts(){try{return JSON.parse(localStorage.getItem(ACC_KEY)||'{}')}catch(e){return{}}}
+function saveAccounts(a){try{localStorage.setItem(ACC_KEY,JSON.stringify(a))}catch(e){}}
+function setSession(ruc){try{localStorage.setItem(SESS_KEY,ruc)}catch(e){}}
+function clearSession(){try{localStorage.removeItem(SESS_KEY)}catch(e){}}
+function validRUC(ruc){return /^\d{11}$/.test(ruc)}
+function tryAutoLogin(){
+  let ruc;try{ruc=localStorage.getItem(SESS_KEY)}catch(e){return}
+  if(!ruc) return;
+  const acc=loadAccounts()[ruc]; if(!acc) return;
+  S.auth={loggedIn:true,ruc:acc.ruc,negocio:acc.negocio};
+  if(!S.name) S.name=acc.negocio;
+}
+// Una sola pantalla: si el RUC ya existe, inicia sesión (pide contraseña);
+// si es nuevo, registra el negocio con ese nombre, RUC y contraseña en el momento.
+function doEnter(negocio,ruc,pass){
+  negocio=(negocio||'').trim();ruc=(ruc||'').trim();
+  if(!validRUC(ruc)) return 'El RUC debe tener 11 dígitos.';
+  if(!pass) return 'Pon una contraseña.';
+  const accounts=loadAccounts();
+  const existing=accounts[ruc];
+  if(existing){
+    if(existing.pass!==pass) return 'Ese RUC ya tiene una cuenta y la contraseña no coincide.';
+    S.auth={loggedIn:true,ruc:existing.ruc,negocio:existing.negocio};
+    setSession(ruc); if(!S.name) S.name=existing.negocio;
+    return '';
+  }
+  if(!negocio) return 'Pon el nombre de tu negocio.';
+  accounts[ruc]={ruc,negocio,pass};
+  saveAccounts(accounts);
+  S.auth={loggedIn:true,ruc,negocio};
+  setSession(ruc); S.name=negocio;
+  return '';
+}
+function doLogout(){clearSession();S.auth={loggedIn:false,ruc:'',negocio:''};S.step=0;S.authErr=''}
+function quickDemoLogin(){
+  const ruc='10462012345';const accounts=loadAccounts();
+  accounts[ruc]={ruc,negocio:'Minimarket Los Andes',pass:'demo1234'};
+  saveAccounts(accounts); setSession(ruc);
+  S.auth={loggedIn:true,ruc,negocio:'Minimarket Los Andes'};
+  demo(); S.step=2;
+}
 async function initCaps(){
   if(!window.claude||!window.claude.use) return;
   try{CAP.sample=await window.claude.use('sample')}catch(e){}
@@ -147,6 +205,25 @@ function demo(){
 
 function bar(p){const l=level(p);return `<div class="bar"><i style="width:${p}%;background:${l.c}"></i></div>`}
 function lamp(p){const l=level(p).k;return `<div class="lamp"><i style="background:var(--red);color:var(--red)" class="${l==='r'?'on':''}"></i><i style="background:var(--amb);color:var(--amb)" class="${l==='a'?'on':''}"></i><i style="background:var(--em);color:var(--em)" class="${l==='g'?'on':''}"></i></div>`}
+
+function vAuth(){
+  return `<div class="authwrap">
+  <div class="card">
+    <h1 style="text-align:center">SegurPYME</h1>
+    <p class="muted" style="text-align:center">Diagnóstico exprés de ciberseguridad y cumplimiento legal</p>
+    <label for="auNeg">Nombre de tu empresa</label>
+    <input id="auNeg" placeholder="Ej. Minimarket Los Andes">
+    <label for="auRuc">RUC</label>
+    <input id="auRuc" placeholder="11 dígitos" inputmode="numeric" maxlength="11">
+    <label for="auPass">Contraseña</label>
+    <input id="auPass" type="password" placeholder="Tu contraseña">
+    <p class="hint">Si tu RUC ya está registrado, entras a tu cuenta; si es la primera vez, se crea al instante con estos datos.</p>
+    <div class="row"><button class="btn" data-a="enter" style="flex:1">Ingresar</button></div>
+    ${S.authErr?`<div class="err">${esc(S.authErr)}</div>`:''}
+    <p class="hint" style="text-align:center;margin-top:10px">¿Solo quieres ver cómo funciona? <button class="linklike" style="padding:0;font-size:12px" data-a="guestdemo">Entrar con cuenta de ejemplo →</button></p>
+  </div>
+  <p class="small muted" style="text-align:center">Prototipo de demostración: tus datos se guardan solo en este navegador, no se envían a ningún servidor.</p>
+</div>`}
 
 function vInicio(){return `
 <div class="card">
@@ -240,6 +317,7 @@ function vEquipo(){
 const VIEWS=[vInicio,vTest,vSemaforo,vLegal,vPlan,vEquipo];
 function unlocked(i){return i<=1||answered()}
 function render(){
+  if(renderGated()) return;
   document.getElementById('steps').innerHTML=STEPS.map((s,i)=>`<button class="${i===S.step?'on':(i<S.step?'done':'')}" data-a="go" data-i="${i}" ${unlocked(i)?'':'disabled'}>${s}</button>`).join('');
   document.getElementById('view').innerHTML=VIEWS[S.step]();
   const pv=document.getElementById('prev'),nx=document.getElementById('next');
@@ -250,6 +328,20 @@ function render(){
   window.scrollTo({top:0});
 }
 function go(i){S.step=i;render()}
+
+function renderGated(){
+  if(!S.auth.loggedIn){
+    document.getElementById('acctbar').innerHTML='';
+    document.getElementById('steps').innerHTML='';
+    document.getElementById('view').innerHTML=vAuth();
+    document.getElementById('prev').style.visibility='hidden';
+    document.getElementById('next').style.visibility='hidden';
+    window.scrollTo({top:0});
+    return true;
+  }
+  document.getElementById('acctbar').innerHTML=`<div class="acctbar"><span>${esc(S.auth.negocio)} · RUC ${esc(S.auth.ruc)}</span><button data-a="logout">Cerrar sesión</button></div>`;
+  return false;
+}
 
 async function doExplain(id){
   const q=Q.find(x=>x.id===id); if(!q||!CAP.sample) return;
@@ -316,6 +408,14 @@ document.addEventListener('click',e=>{
     if(a==='les'){S.les[t.dataset.i]=t.dataset.v;const y=window.scrollY;render();window.scrollTo({top:y})}
     if(a==='explain')doExplain(t.dataset.id);
     if(a==='pdf')doPdf();
+    if(a==='enter'){
+      const neg=document.getElementById('auNeg').value;
+      const ruc=document.getElementById('auRuc').value;
+      const pass=document.getElementById('auPass').value;
+      const err=doEnter(neg,ruc,pass); S.authErr=err; if(!err){S.step=0} render();
+    }
+    if(a==='guestdemo'){quickDemoLogin();render()}
+    if(a==='logout'){doLogout();render()}
     return}
   if(e.target.id==='prev')go(S.step-1);
   if(e.target.id==='next')go(S.step===VIEWS.length-1?0:S.step+1);
@@ -323,6 +423,7 @@ document.addEventListener('click',e=>{
 document.addEventListener('change',e=>{
   const t=e.target; if(t.dataset&&t.dataset.a==='task'){S.done[t.dataset.id]=t.checked;const y=window.scrollY;render();window.scrollTo({top:y})}
 });
+tryAutoLogin();
 render();
 initCaps();
 </script>
